@@ -64,7 +64,7 @@ public class Menu extends JFrame {
         add(cardPanel);
 
         cardPanel.add(crearPanelMenuPrincipal(), "MENU_PRINCIPAL");
-        cardPanel.add(crearPanelUsuarioBase("AGREGAR NUEVO USUARIO", "Username Ãšnico:", "AGREGAR",
+        cardPanel.add(crearPanelUsuarioBase("AGREGAR NUEVO USUARIO", "Escribir nombre:", "AGREGAR",
                 true,
                 txtUsernameAdd = new JTextField(20)), "ADD_USER");
         cardPanel.add(crearPanelUsuarioBase("DESACTIVAR USUARIO", "Username a Desactivar:", "DESACTIVAR",
@@ -138,7 +138,7 @@ public class Menu extends JFrame {
         panelInferior.setBackground(PS_BLUE_DARK);
         panelInferior.setBorder(BorderFactory.createEmptyBorder(10, 50, 30, 50));
 
-        JLabel lblStatus = new JLabel("Esperando acciÃ³n", SwingConstants.CENTER);
+        JLabel lblStatus = new JLabel("Esperando accion", SwingConstants.CENTER);
         lblStatus.setOpaque(true);
         lblStatus.setBackground(STATUS_BG);
         lblStatus.setForeground(Color.GRAY);
@@ -156,7 +156,7 @@ public class Menu extends JFrame {
             String username = txtInput.getText().trim();
 
             if (username.isEmpty()) {
-                lblStatus.setText("Error: El campo estÃ¡ vacÃ­o");
+                lblStatus.setText("Error: El campo esta¡ vaci­o");
                 lblStatus.setForeground(STATUS_ERROR);
                 lblStatus.setBorder(BorderFactory.createLineBorder(STATUS_ERROR));
                 return;
@@ -165,13 +165,13 @@ public class Menu extends JFrame {
             try {
                 if (esAgregar) {
                     psnUsers.addUser(username);
-                    lblStatus.setText("Ã‰xito: Usuario '" + username + "' agregado");
+                    lblStatus.setText("Exito: Usuario '" + username + "' agregado");
                     lblStatus.setForeground(STATUS_SUCCESS);
                     lblStatus.setBorder(BorderFactory.createLineBorder(STATUS_SUCCESS));
                     txtInput.setText("");
                 } else {
                     psnUsers.deactivateUser(username);
-                    lblStatus.setText("Ã‰xito: Usuario '" + username + "' desactivado");
+                    lblStatus.setText("Exito: Usuario '" + username + "' desactivado");
                     lblStatus.setForeground(STATUS_SUCCESS);
                     lblStatus.setBorder(BorderFactory.createLineBorder(STATUS_SUCCESS));
                     txtInput.setText("");
@@ -185,7 +185,7 @@ public class Menu extends JFrame {
 
         btnVolver.addActionListener(e -> {
             limpiarCampos();
-            lblStatus.setText("Esperando acciÃ³n");
+            lblStatus.setText("Esperando accion");
             lblStatus.setForeground(Color.GRAY);
             lblStatus.setBorder(BorderFactory.createLineBorder(Color.GRAY));
             cardLayout.show(cardPanel, "MENU_PRINCIPAL");
@@ -372,7 +372,7 @@ public class Menu extends JFrame {
 
         JPanel bottomPanel = new JPanel(new FlowLayout());
         bottomPanel.setBackground(PS_BLUE_DARK);
-        JButton btnVolver = crearBotonUI("VOLVER AL MENÃš", new Color(150, 0, 0));
+        JButton btnVolver = crearBotonUI("VOLVER AL MENU", new Color(150, 0, 0));
         btnVolver.addActionListener(e -> {
             limpiarCampos();
             cardLayout.show(cardPanel, "MENU_PRINCIPAL");
@@ -410,13 +410,13 @@ public class Menu extends JFrame {
 
             psnUsers.addTrophieTo(user, game, game, tipo);
 
-            JOptionPane.showMessageDialog(this, "Â¡TROFEO AGREGADO!");
+            JOptionPane.showMessageDialog(this, "TROFEO AGREGADO!");
             
             JPanel panelResumen = new JPanel(new BorderLayout(10, 5));
             panelResumen.setBackground(PS_BLUE_DARK);
             panelResumen.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-            JLabel titulo = new JLabel("<html><center>Â¡TROFEO AGREGADO!</center></html>", SwingConstants.CENTER);
+            JLabel titulo = new JLabel("<html><center>TROFEO AGREGADO!</center></html>", SwingConstants.CENTER);
             titulo.setFont(new Font("Arial", Font.BOLD, 16));
             panelResumen.add(titulo, BorderLayout.NORTH);
 
