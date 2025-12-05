@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package labpro2.pkg7_hasp;
+package Clases;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.time.LocalDate;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -19,6 +20,7 @@ public class PSNUsers {
 
     private RandomAccessFile rusers;
     private HashTable ListUsers;
+    private ImageIcon lastTrophyImage;
 
     public PSNUsers() {
         try {
@@ -80,7 +82,7 @@ public class PSNUsers {
         ListUsers.remove(username);
     }
 
-    public void addTrophieTo(String username, String game, String NameTrf, Trophy type)throws IOException {
+    public void addTrophieTo(String username, String game, String NameTrf, Trophy type) throws IOException {
 
         long PosUser = ListUsers.search(username);
         if (PosUser == -1) {
@@ -124,7 +126,7 @@ public class PSNUsers {
         int puntos = rusers.readInt();
         int cantidad = rusers.readInt();
 
-        puntos += type.points;
+        puntos += type.puntos;
         cantidad++;
 
         rusers.seek(PosUser);
@@ -137,7 +139,7 @@ public class PSNUsers {
         File fileimg = new File(NameImg);
 
         if (!fileimg.exists()) {
-            return new byte[0]; 
+            return new byte[0];
         }
 
         byte[] img = new byte[(int) fileimg.length()];
@@ -148,6 +150,8 @@ public class PSNUsers {
     }
 
     public String playerInfo(String username) throws IOException {
+
+        lastTrophyImage = null; // SE RESETEA CADA VEZ
 
         long pos = ListUsers.search(username);
         if (pos == -1) {
@@ -178,16 +182,25 @@ public class PSNUsers {
             String fecha = trophies.readUTF();
 
             int size = trophies.readInt();
-            trophies.skipBytes(size);
+            byte[] img = new byte[size];
+            trophies.readFully(img);
 
             if (usrtrf.equals(username)) {
-                info = info + "Fecha: " + fecha
+                info += "Fecha: " + fecha
                         + " | Tipo: " + tipo
                         + " | Juego: " + game
                         + " | Desc: " + desc + "\n";
+                if (img.length > 0) {
+                    lastTrophyImage = new ImageIcon(img);
+                }
             }
         }
+
         trophies.close();
         return info;
+    }
+
+    public ImageIcon getLastTrophyImage() {
+        return lastTrophyImage;
     }
 }
