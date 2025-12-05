@@ -19,7 +19,7 @@ public class LabPro27_Hasp {
         SwingUtilities.invokeLater(() -> {
             Menu menu = new Menu();
             menu.setVisible(true);
-                });
+            });
     }
     
 }
