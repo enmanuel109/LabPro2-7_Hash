@@ -494,7 +494,7 @@ public class Menu extends JFrame {
             lblResultadoTrophy.setIcon(new ImageIcon(scaledImage));
             
             // Texto informativo debajo de la imagen
-            String trofeoInfo = "<html><center>✅ TROFEO AGREGADO</center><br>Usuario: <b>" + username + "</b><br>Trofeo: <b>" + tipoStr + "</b><br>Juego: <b>" + juegoDesc + "</html>";
+            String trofeoInfo = "<html><center>TROFEO AGREGADO</center><br>Usuario: <b>" + username + "</b><br>Trofeo: <b>" + tipoStr + "</b><br>Juego: <b>" + juegoDesc + "</html>";
             lblResultadoTrophy.setText(trofeoInfo);
             
             // Posiciona el texto debajo de la imagen y centra el conjunto
