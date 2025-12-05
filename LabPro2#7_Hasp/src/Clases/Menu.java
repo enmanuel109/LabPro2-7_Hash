@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import javax.imageio.ImageIO;
 
 /**
@@ -18,23 +19,6 @@ public class Menu extends JFrame {
 
     private static final Color PS_BLUE_DARK = new Color(0, 48, 130);
     private static final Color PS_BLUE_LIGHT = new Color(0, 100, 200);
-    private static final Color PS_ACCENT_CYAN = Color.CYAN;
-    private static final Color CONSOLE_BG_LIGHT = new Color(220, 240, 255);
-    private static final Color CONSOLE_FG_DARK = PS_BLUE_DARK;
-
-    private JPanel cardPanel;
-    private CardLayout cardLayout;
-
-    private JTextField txtUsernameAdd;
-    private JTextField txtUsernameDeactivate;
-    private JTextField txtUsernameInfo;
-
-    private JTextField txtUsernameTrophy;
-    private JComboBox<String> cmbTrofeoTipo;
-    private JTextField txtJuegoDescripcion;
-    private JTextField txtRutaImagen;
-
-    private JLabel lblResultadoTrophy;
 
     private PSNUsers psnUsers;
 
@@ -42,42 +26,19 @@ public class Menu extends JFrame {
         super("PSN MANAGER");
         psnUsers = new PSNUsers();
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(850, 600);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(PS_BLUE_DARK);
 
-        cardLayout = new CardLayout();
-        cardPanel = new JPanel(cardLayout);
-        add(cardPanel);
-
-        cardPanel.add(crearPanelMenuPrincipal(), "MENU");
-        cardPanel.add(crearPanelUsuarioBase("AGREGAR USUARIO", "Username:", "CREAR",
-                e -> probarAgregarUsuario(txtUsernameAdd.getText().trim()),
-                txtUsernameAdd = new JTextField(20)), "ADD");
-
-        cardPanel.add(crearPanelUsuarioBase("DESACTIVAR USUARIO", "Username:", "DESACTIVAR",
-                e -> probarDesactivarUsuario(txtUsernameDeactivate.getText().trim()),
-                txtUsernameDeactivate = new JTextField(20)), "DEL");
-
-        cardPanel.add(crearPanelUsuarioBase("MOSTRAR INFORMACIÓN", "Username:", "MOSTRAR",
-                e -> probarMostrarInfo(txtUsernameInfo.getText().trim()),
-                txtUsernameInfo = new JTextField(20)), "INFO");
-
-        cardPanel.add(crearPanelAgregarTrofeo(), "TROPHY");
-
-        cardLayout.show(cardPanel, "MENU");
+        add(crearMenuPrincipal(), BorderLayout.CENTER);
     }
 
-    private JPanel crearPanelMenuPrincipal() {
-        JPanel panel = new JPanel(new BorderLayout());
+    private JPanel crearMenuPrincipal() {
+        JPanel panel = new JPanel(new GridLayout(5, 1, 0, 15));
         panel.setBackground(PS_BLUE_DARK);
-
-        JLabel titulo = crearTituloPanel("PSN MANAGER", 32);
-        panel.add(titulo, BorderLayout.NORTH);
-
-        JPanel botones = new JPanel(new GridLayout(5, 1, 0, 15));
-        botones.setBackground(PS_BLUE_DARK);
-        botones.setBorder(BorderFactory.createEmptyBorder(40, 200, 40, 200));
+        panel.setBorder(BorderFactory.createEmptyBorder(40, 200, 40, 200));
 
         JButton b1 = crearBotonUI("AGREGAR USUARIO");
         JButton b2 = crearBotonUI("DESACTIVAR USUARIO");
@@ -85,175 +46,218 @@ public class Menu extends JFrame {
         JButton b4 = crearBotonUI("MOSTRAR INFO");
         JButton b5 = crearBotonUI("SALIR", new Color(180, 0, 0));
 
-        b1.addActionListener(e -> cardLayout.show(cardPanel, "ADD"));
-        b2.addActionListener(e -> cardLayout.show(cardPanel, "DEL"));
-        b3.addActionListener(e -> cardLayout.show(cardPanel, "TROPHY"));
-        b4.addActionListener(e -> cardLayout.show(cardPanel, "INFO"));
+        b1.addActionListener(e -> frameAgregarUsuario());
+        b2.addActionListener(e -> frameDesactivarUsuario());
+        b3.addActionListener(e -> frameAgregarTrofeo());
+        b4.addActionListener(e -> frameMostrarInfo());
         b5.addActionListener(e -> System.exit(0));
 
-        botones.add(b1);
-        botones.add(b2);
-        botones.add(b3);
-        botones.add(b4);
-        botones.add(b5);
+        panel.add(b1);
+        panel.add(b2);
+        panel.add(b3);
+        panel.add(b4);
+        panel.add(b5);
 
-        panel.add(botones, BorderLayout.CENTER);
         return panel;
     }
 
-    private JPanel crearPanelUsuarioBase(String titulo, String lblText, String btnText,
-            java.awt.event.ActionListener action, JTextField txtInput) {
+    private void frameAgregarUsuario() {
+        JFrame f = new JFrame("AGREGAR USUARIO");
+        f.setSize(400, 200);
+        f.setLocationRelativeTo(this);
+        f.setLayout(new GridLayout(3, 1));
 
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(PS_BLUE_DARK);
+        JTextField txt = new JTextField();
+        JButton btn = new JButton("AGREGAR");
 
-        panel.add(crearTituloPanel(titulo, 22), BorderLayout.NORTH);
-
-        JPanel centro = new JPanel(new GridBagLayout());
-        centro.setBackground(PS_BLUE_DARK);
-
-        JLabel lbl = crearEtiquetaUI(lblText, Color.WHITE);
-
-        JLabel lblResultado = new JLabel("Esperando acción...", SwingConstants.CENTER);
-        lblResultado.setPreferredSize(new Dimension(500, 70));
-        lblResultado.setOpaque(true);
-        lblResultado.setBackground(CONSOLE_BG_LIGHT);
-        lblResultado.setFont(new Font(Font.MONOSPACED, Font.BOLD, 16));
-        lblResultado.setBorder(BorderFactory.createLineBorder(PS_ACCENT_CYAN, 2));
-
-        JPanel fila = new JPanel();
-        fila.setBackground(PS_BLUE_DARK);
-        fila.add(lbl);
-        fila.add(txtInput);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridy = 0;
-        centro.add(fila, gbc);
-        gbc.gridy = 1;
-        centro.add(lblResultado, gbc);
-
-        panel.add(centro, BorderLayout.CENTER);
-
-        JButton btn = crearBotonUI(btnText, new Color(0, 150, 50));
-        btn.addActionListener(action);
-        btn.addActionListener(e -> lblResultado.setText("✅ Operación completada"));
-
-        JButton volver = crearBotonUI("VOLVER", new Color(150, 0, 0));
-        volver.addActionListener(e -> {
-            txtInput.setText("");
-            lblResultado.setText("Esperando acción...");
-            cardLayout.show(cardPanel, "MENU");
+        btn.addActionListener(e -> {
+            try {
+                psnUsers.addUser(txt.getText());
+                JOptionPane.showMessageDialog(f, "Usuario agregado");
+                f.dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(f, ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
         });
 
-        JPanel abajo = new JPanel();
-        abajo.setBackground(PS_BLUE_DARK);
-        abajo.add(btn);
-        abajo.add(volver);
-
-        panel.add(abajo, BorderLayout.SOUTH);
-        return panel;
+        f.add(new JLabel("Username", SwingConstants.CENTER));
+        f.add(txt);
+        f.add(btn);
+        f.setVisible(true);
     }
 
-    private JPanel crearPanelAgregarTrofeo() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(PS_BLUE_DARK);
+    private void frameDesactivarUsuario() {
+        JFrame f = new JFrame("DESACTIVAR USUARIO");
+        f.setSize(400, 200);
+        f.setLocationRelativeTo(this);
+        f.setLayout(new GridLayout(3, 1));
 
-        panel.add(crearTituloPanel("AGREGAR TROFEO", 22), BorderLayout.NORTH);
+        JTextField txt = new JTextField();
+        JButton btn = new JButton("DESACTIVAR");
 
-        JPanel formulario = new JPanel(new GridLayout(4, 2, 10, 10));
-        formulario.setBackground(PS_BLUE_DARK);
-        formulario.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        btn.addActionListener(e -> {
+            try {
+                psnUsers.deactivateUser(txt.getText());
+                JOptionPane.showMessageDialog(f, "Usuario desactivado");
+                f.dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(f, ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
-        txtUsernameTrophy = new JTextField();
-        cmbTrofeoTipo = new JComboBox<>(new String[]{"PLATINO", "ORO", "PLATA", "BRONCE"});
-        txtJuegoDescripcion = new JTextField();
-        txtRutaImagen = new JTextField();
-
-        formulario.add(crearEtiquetaUI("Username", Color.WHITE));
-        formulario.add(txtUsernameTrophy);
-        formulario.add(crearEtiquetaUI("Tipo", Color.WHITE));
-        formulario.add(cmbTrofeoTipo);
-        formulario.add(crearEtiquetaUI("Juego", Color.WHITE));
-        formulario.add(txtJuegoDescripcion);
-        formulario.add(crearEtiquetaUI("Ruta imagen", Color.WHITE));
-        formulario.add(txtRutaImagen);
-
-        lblResultadoTrophy = new JLabel("Resultado", SwingConstants.CENTER);
-        lblResultadoTrophy.setOpaque(true);
-        lblResultadoTrophy.setBackground(CONSOLE_BG_LIGHT);
-
-        panel.add(formulario, BorderLayout.WEST);
-        panel.add(lblResultadoTrophy, BorderLayout.CENTER);
-
-        JButton agregar = crearBotonUI("AGREGAR", new Color(0, 150, 50));
-        agregar.addActionListener(e -> probarAgregarTrofeo());
-
-        JButton volver = crearBotonUI("VOLVER", new Color(150, 0, 0));
-        volver.addActionListener(e -> cardLayout.show(cardPanel, "MENU"));
-
-        JPanel abajo = new JPanel();
-        abajo.setBackground(PS_BLUE_DARK);
-        abajo.add(agregar);
-        abajo.add(volver);
-
-        panel.add(abajo, BorderLayout.SOUTH);
-        return panel;
+        f.add(new JLabel("Username", SwingConstants.CENTER));
+        f.add(txt);
+        f.add(btn);
+        f.setVisible(true);
     }
 
-    private void probarAgregarUsuario(String username) {
-        try {
-            psnUsers.addUser(username);
-            showCustomDialog("Usuario agregado correctamente", "OK", JOptionPane.INFORMATION_MESSAGE);
-        } catch (IOException e) {
-            showCustomDialog("Error al agregar usuario", "Error", JOptionPane.ERROR_MESSAGE);
+    private void frameAgregarTrofeo() {
+        JFrame f = new JFrame("AGREGAR TROFEO");
+        f.setSize(450, 300);
+        f.setLocationRelativeTo(this);
+        f.setLayout(new GridLayout(4, 2));
+
+        JTextField txtUser = new JTextField();
+        JTextField txtGame = new JTextField();
+        JComboBox<String> cmb = new JComboBox<>(new String[]{"PLATINO", "ORO", "PLATA", "BRONCE"});
+        JButton btn = new JButton("AGREGAR");
+
+        btn.addActionListener(e -> {
+
+            String user = txtUser.getText().trim();
+            String game = txtGame.getText().trim();
+
+            if (user.isEmpty()) {
+                JOptionPane.showMessageDialog(f,
+                        "El username no puede estar vacío",
+                        "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (game.isEmpty()) {
+                JOptionPane.showMessageDialog(f,
+                        "El nombre del juego NO puede estar vacío",
+                        "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                Trophy tipo = Trophy.valueOf(cmb.getSelectedItem().toString());
+
+                psnUsers.addTrophieTo(user, game, game, tipo);
+
+                JOptionPane.showMessageDialog(f,
+                        "Trofeo agregado correctamente");
+
+                f.dispose();
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(f,
+                        " ERROR: " + ex.getMessage(),
+                        "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        f.add(new JLabel("Usuario"));
+        f.add(txtUser);
+        f.add(new JLabel("Juego"));
+        f.add(txtGame);
+        f.add(new JLabel("Tipo"));
+        f.add(cmb);
+        f.add(new JLabel(""));
+        f.add(btn);
+
+        f.setVisible(true);
+    }
+
+    private void frameMostrarInfo() {
+
+        String username = JOptionPane.showInputDialog(this, "Ingrese el username");
+
+        if (username == null || username.trim().isEmpty()) {
+            return;
         }
-    }
 
-    private void probarDesactivarUsuario(String username) {
-        try {
-            psnUsers.deactivateUser(username);
-            showCustomDialog("Usuario desactivado", "OK", JOptionPane.INFORMATION_MESSAGE);
-        } catch (IOException e) {
-            showCustomDialog("Error al desactivar", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void probarMostrarInfo(String username) {
         try {
             String info = psnUsers.playerInfo(username);
-            lblResultadoTrophy.setText("<html>" + info.replace("\n", "<br>") + "</html>");
 
-            ImageIcon img = psnUsers.getLastTrophyImage();
-            if (img != null) {
-                Image scaled = img.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
-                lblResultadoTrophy.setIcon(new ImageIcon(scaled));
+            if (info.equals("Usuario no existe")) {
+                JOptionPane.showMessageDialog(this, "Usuario no existe");
+                return;
             }
-            cardLayout.show(cardPanel, "TROPHY");
 
-        } catch (IOException e) {
-            showCustomDialog("Error al mostrar información", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
+            JFrame f = new JFrame("INFORMACIoN DEL JUGADOR");
+            f.setSize(800, 550);
+            f.setLocationRelativeTo(this);
+            f.setLayout(new BorderLayout());
 
-    private void probarAgregarTrofeo() {
-        try {
-            String user = txtUsernameTrophy.getText();
-            String game = txtJuegoDescripcion.getText();
-            Trophy tipo = Trophy.valueOf((String) cmbTrofeoTipo.getSelectedItem());
+            JTextArea areaUsuario = new JTextArea(info.split("Trofeos obtenidos:")[0]);
+            areaUsuario.setEditable(false);
+            areaUsuario.setFont(new Font("Monospaced", Font.BOLD, 14));
+            f.add(areaUsuario, BorderLayout.NORTH);
 
-            psnUsers.addTrophieTo(user, game, game, tipo);
+            JPanel panelTrofeos = new JPanel();
+            panelTrofeos.setLayout(new BoxLayout(panelTrofeos, BoxLayout.Y_AXIS));
+            JScrollPane scroll = new JScrollPane(panelTrofeos);
+            f.add(scroll, BorderLayout.CENTER);
 
-            showCustomDialog("Trofeo agregado correctamente", "OK", JOptionPane.INFORMATION_MESSAGE);
+            RandomAccessFile trophies = new RandomAccessFile("trophies.psn", "r");
+
+            while (trophies.getFilePointer() < trophies.length()) {
+
+                String user = trophies.readUTF();
+                String tipo = trophies.readUTF();
+                String game = trophies.readUTF();
+                String desc = trophies.readUTF();
+                String fecha = trophies.readUTF();
+
+                int size = trophies.readInt();
+                byte[] img = new byte[size];
+                trophies.readFully(img);
+
+                if (user.equalsIgnoreCase(username)) {
+
+                    JPanel panelTrofeo = new JPanel();
+                    panelTrofeo.setLayout(new BoxLayout(panelTrofeo, BoxLayout.Y_AXIS));
+                    panelTrofeo.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                    panelTrofeo.setBackground(Color.WHITE);
+
+                    JLabel txt = new JLabel(
+                            fecha + " - " + tipo + " - " + game + " - " + desc
+                    );
+
+                    txt.setFont(new Font("Arial", Font.BOLD, 14));
+                    txt.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+                    JLabel imgLabel = new JLabel();
+                    imgLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                    imgLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
+
+                    if (img.length > 0) {
+                        ImageIcon icon = new ImageIcon(img);
+                        Image esc = icon.getImage().getScaledInstance(130, 130, Image.SCALE_SMOOTH);
+                        imgLabel.setIcon(new ImageIcon(esc));
+                    } else {
+                        imgLabel.setText("Sin imagen");
+                    }
+
+                    panelTrofeo.add(txt);
+                    panelTrofeo.add(imgLabel);
+
+                    panelTrofeos.add(panelTrofeo);
+                    panelTrofeos.add(Box.createVerticalStrut(15));
+                }
+            }
+
+            trophies.close();
+            f.setVisible(true);
+
         } catch (Exception e) {
-            showCustomDialog("Error al agregar trofeo", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al mostrar info");
         }
-    }
-
-    private JLabel crearTituloPanel(String texto, int size) {
-        JLabel lbl = new JLabel(texto, SwingConstants.CENTER);
-        lbl.setFont(new Font("Arial", Font.BOLD, size));
-        lbl.setForeground(PS_ACCENT_CYAN);
-        return lbl;
     }
 
     private JButton crearBotonUI(String texto) {
@@ -266,15 +270,5 @@ public class Menu extends JFrame {
         btn.setForeground(Color.WHITE);
         btn.setFont(new Font("Arial", Font.BOLD, 16));
         return btn;
-    }
-
-    private JLabel crearEtiquetaUI(String texto, Color color) {
-        JLabel lbl = new JLabel(texto);
-        lbl.setForeground(color);
-        return lbl;
-    }
-
-    private void showCustomDialog(String message, String title, int type) {
-        JOptionPane.showMessageDialog(this, message, title, type);
     }
 }

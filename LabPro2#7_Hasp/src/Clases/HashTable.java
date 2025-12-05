@@ -18,53 +18,63 @@ public class HashTable {
 
     //metodo de add
     public void add(String username, long posicion) {
-        Entry nuevoEntry = new Entry(username, posicion);
 
-        if (this.head == null) {
-            this.head = nuevoEntry;
+        Entry nuevo = new Entry(username, posicion);
+
+        if (head == null) {
+            head = nuevo;
             return;
         }
 
-        Entry actual = this.head;
+        Entry actual = head;
+
         while (actual.getSiguiente() != null) {
             actual = actual.getSiguiente();
         }
 
-        actual.setSiguiente(nuevoEntry);
+        actual.setSiguiente(nuevo);
     }
 
     //metodo de buscar
     public long search(String username) {
-        Entry actual = this.head;
+
+        Entry actual = head;
 
         while (actual != null) {
+
             if (actual.getUsername().equals(username)) {
                 return actual.getPosicion();
             }
+
             actual = actual.getSiguiente();
         }
+
         return -1;
     }
 
     //metood de remove
-    public boolean remove(String username) {
-        if (this.head == null) {
-            return false;
+    public void remove(String username) {
+
+        if (head == null) {
+            return;
         }
 
-        if (this.head.getUsername().equals(username)) {
-            this.head = this.head.getSiguiente();
-            return true;
+        // ✅ SI ES EL PRIMERO
+        if (head.getUsername().equals(username)) {
+            head = head.getSiguiente();
+            return;
         }
 
-        Entry actual = this.head;
+        Entry actual = head;
+
         while (actual.getSiguiente() != null) {
+
             if (actual.getSiguiente().getUsername().equals(username)) {
                 actual.setSiguiente(actual.getSiguiente().getSiguiente());
-                return true;
+                return;
             }
+
             actual = actual.getSiguiente();
         }
-        return false;
     }
 }

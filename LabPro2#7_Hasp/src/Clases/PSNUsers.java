@@ -20,7 +20,6 @@ public class PSNUsers {
 
     private RandomAccessFile rusers;
     private HashTable ListUsers;
-    private ImageIcon lastTrophyImage;
 
     public PSNUsers() {
         try {
@@ -34,43 +33,44 @@ public class PSNUsers {
 
     private void reloadHashTable() throws IOException {
         rusers.seek(0);
-
         while (rusers.getFilePointer() < rusers.length()) {
 
-            long PosUser = rusers.getFilePointer();
+            long pos = rusers.getFilePointer();
             String username = rusers.readUTF();
             rusers.readInt();
             rusers.readInt();
             boolean activo = rusers.readBoolean();
 
             if (activo) {
-                ListUsers.add(username, PosUser);
+                ListUsers.add(username, pos);
             }
         }
     }
 
     public void addUser(String username) throws IOException {
+        username = username.trim().toLowerCase();
 
         if (ListUsers.search(username) != -1) {
-            return;
+            throw new IOException("Usuario ya existe");
         }
 
         rusers.seek(rusers.length());
-        long singuinte = rusers.getFilePointer();
+        long pos = rusers.getFilePointer();
 
         rusers.writeUTF(username);
         rusers.writeInt(0);
         rusers.writeInt(0);
         rusers.writeBoolean(true);
 
-        ListUsers.add(username, singuinte);
+        ListUsers.add(username, pos);
     }
 
     public void deactivateUser(String username) throws IOException {
+        username = username.trim().toLowerCase();
 
         long pos = ListUsers.search(username);
         if (pos == -1) {
-            return;
+            throw new IOException("Usuario no existe");
         }
 
         rusers.seek(pos);
@@ -78,80 +78,88 @@ public class PSNUsers {
         rusers.readInt();
         rusers.readInt();
         rusers.writeBoolean(false);
-
-        ListUsers.remove(username);
     }
 
-    public void addTrophieTo(String username, String game, String NameTrf, Trophy type) throws IOException {
+    public void addTrophieTo(String username, String game, String nameTrf, Trophy type) throws IOException {
+        username = username.trim().toLowerCase();
 
-        long PosUser = ListUsers.search(username);
-        if (PosUser == -1) {
-            return;
+        long pos = ListUsers.search(username);
+        if (pos == -1) {
+            throw new IOException("Usuario no existe");
         }
 
-        String TrofeoName;
+        rusers.seek(pos);
+        rusers.readUTF();
+        rusers.readInt();
+        rusers.readInt();
+        boolean activo = rusers.readBoolean();
 
+        if (!activo) {
+            throw new IOException("Usuario desactivado");
+        }
+
+        File tf = new File("trophies.psn");
+        if (!tf.exists()) {
+            tf.createNewFile();
+        }
+
+        String imgPath;
         switch (type) {
             case PLATINO:
-                TrofeoName = "imgtrofeos/PLATINO.png";
+                imgPath = "src/imgtrofeos/PLATINO.png";
                 break;
             case ORO:
-                TrofeoName = "imgtrofeos/ORO.png";
+                imgPath = "src/imgtrofeos/ORO.png";
                 break;
             case PLATA:
-                TrofeoName = "imgtrofeos/PLATA.png";
+                imgPath = "src/imgtrofeos/PLATA.png";
                 break;
             default:
-                TrofeoName = "imgtrofeos/BRONCE.png";
+                imgPath = "src/imgtrofeos/BRONCE.png";
         }
 
-        RandomAccessFile trophies = new RandomAccessFile("trophies.psn", "rw");
+        RandomAccessFile trophies = new RandomAccessFile(tf, "rw");
         trophies.seek(trophies.length());
 
         trophies.writeUTF(username);
         trophies.writeUTF(type.name());
         trophies.writeUTF(game);
-        trophies.writeUTF(NameTrf);
+        trophies.writeUTF(nameTrf);
         trophies.writeUTF(LocalDate.now().toString());
 
-        byte[] img = readImage(TrofeoName);
+        byte[] img = readImage(imgPath);
         trophies.writeInt(img.length);
         trophies.write(img);
-
         trophies.close();
 
-        rusers.seek(PosUser);
+        rusers.seek(pos);
         rusers.readUTF();
-
         int puntos = rusers.readInt();
         int cantidad = rusers.readInt();
 
         puntos += type.puntos;
         cantidad++;
 
-        rusers.seek(PosUser);
+        rusers.seek(pos);
         rusers.readUTF();
         rusers.writeInt(puntos);
         rusers.writeInt(cantidad);
     }
 
-    private byte[] readImage(String NameImg) throws IOException {
-        File fileimg = new File(NameImg);
+    private byte[] readImage(String ruta) throws IOException {
 
-        if (!fileimg.exists()) {
-            return new byte[0];
+        File file = new File(ruta);
+
+        if (!file.exists()) {
+            throw new IOException("No existe la imagen: " + ruta);
         }
 
-        byte[] img = new byte[(int) fileimg.length()];
-        DataInputStream dis = new DataInputStream(new FileInputStream(fileimg));
-        dis.readFully(img);
-        dis.close();
-        return img;
+        return java.nio.file.Files.readAllBytes(file.toPath());
     }
 
     public String playerInfo(String username) throws IOException {
 
-        lastTrophyImage = null; 
+        username = username.trim().toLowerCase();
 
         long pos = ListUsers.search(username);
         if (pos == -1) {
@@ -165,13 +173,20 @@ public class PSNUsers {
         int trofeos = rusers.readInt();
         boolean activo = rusers.readBoolean();
 
+        String estado = activo ? "ACTIVO" : "DESACTIVADO";
+
         String info = "Usuario: " + user + "\n"
+                + "Estado: " + estado + "\n"
                 + "Puntos: " + puntos + "\n"
-                + "Trofeos: " + trofeos + "\n"
-                + "Activo: " + activo + "\n\n"
+                + "Trofeos: " + trofeos + "\n\n"
                 + "Trofeos obtenidos:\n";
 
-        RandomAccessFile trophies = new RandomAccessFile("trophies.psn", "r");
+        File tf = new File("trophies.psn");
+        if (!tf.exists()) {
+            tf.createNewFile();
+        }
+
+        RandomAccessFile trophies = new RandomAccessFile(tf, "r");
 
         while (trophies.getFilePointer() < trophies.length()) {
 
@@ -182,25 +197,17 @@ public class PSNUsers {
             String fecha = trophies.readUTF();
 
             int size = trophies.readInt();
-            byte[] img = new byte[size];
-            trophies.readFully(img);
+            trophies.skipBytes(size);
 
             if (usrtrf.equals(username)) {
                 info += "Fecha: " + fecha
                         + " | Tipo: " + tipo
                         + " | Juego: " + game
                         + " | Desc: " + desc + "\n";
-                if (img.length > 0) {
-                    lastTrophyImage = new ImageIcon(img);
-                }
             }
         }
 
         trophies.close();
         return info;
-    }
-
-    public ImageIcon getLastTrophyImage() {
-        return lastTrophyImage;
     }
 }
