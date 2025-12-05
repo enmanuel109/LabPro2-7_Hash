@@ -151,7 +151,7 @@ public class PSNUsers {
 
     public String playerInfo(String username) throws IOException {
 
-        lastTrophyImage = null; // SE RESETEA CADA VEZ
+        lastTrophyImage = null; 
 
         long pos = ListUsers.search(username);
         if (pos == -1) {
