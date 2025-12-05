@@ -537,6 +537,7 @@ public class Menu extends JFrame {
         }
 
         try {
+<<<<<<< HEAD:LabPro2#7_Hasp/src/Clases/Menu.java
             Trophy tipo = Trophy.valueOf(tipoStr);
 
             // <-- CONEXIÓN REAL CON TU SISTEMA
@@ -548,6 +549,26 @@ public class Menu extends JFrame {
                     + tipo + "</b><br>Juego: <b>"
                     + juegoDesc + "</b></center></html>");
 
+=======
+            File file = new File(rutaImagen);
+            if (!file.exists()) {
+                 throw new IOException("El archivo no existe en la ruta especificada.");
+            }
+            
+            Image image = ImageIO.read(file);
+            
+            // **ESCALADO DE IMAGEN POR DEFECTO (100x100)**
+            Image scaledImage = image.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+            lblResultadoTrophy.setIcon(new ImageIcon(scaledImage));
+            
+            // Texto informativo debajo de la imagen
+            String trofeoInfo = "<html><center>TROFEO AGREGADO</center><br>Usuario: <b>" + username + "</b><br>Trofeo: <b>" + tipoStr + "</b><br>Juego: <b>" + juegoDesc + "</html>";
+            lblResultadoTrophy.setText(trofeoInfo);
+            
+            // Posiciona el texto debajo de la imagen y centra el conjunto
+            lblResultadoTrophy.setHorizontalTextPosition(SwingConstants.CENTER);
+            lblResultadoTrophy.setVerticalTextPosition(SwingConstants.BOTTOM);
+>>>>>>> 3ceeb6b6f438736e0f12cd7aa0b78deec73d23c7:LabPro2#7_Hasp/src/labpro2/pkg7_hasp/Menu.java
             lblResultadoTrophy.setHorizontalAlignment(SwingConstants.CENTER);
             lblResultadoTrophy.setVerticalAlignment(SwingConstants.CENTER);
 
